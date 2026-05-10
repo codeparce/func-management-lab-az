@@ -10,7 +10,24 @@ app.http('users', {
                 const id = request.query.get('id');
 
                 if (id) {
-                    const user = await userService.getUserById(Number(id));
+                    const user = await userService.getUserById(id);
+                    if (!user) {
+                        return {
+                            status: 404,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ error: 'User not found' })
+                        };
+                    }
+                    return {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(user)
+                    };
+                }
+
+                const email = request.query.get('email');
+                if (email) {
+                    const user = await userService.getUserByEmail(email);
                     if (!user) {
                         return {
                             status: 404,
@@ -44,16 +61,29 @@ app.http('users', {
                 };
             }
 
-            if (!body.name) {
+            if (!body.name || !body.email) {
                 return {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Field "name" is required' })
+                    body: JSON.stringify({ error: 'Fields "name" and "email" are required' })
                 };
             }
 
-            const user = await userService.createUser(body.name, body.email);
-            context.log(`User registered: ${body.name} (ID: ${user.id})`);
+            const existing = await userService.getUserByEmail(body.email);
+            if (existing) {
+                return {
+                    status: 409,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ error: 'Email already registered' })
+                };
+            }
+
+            const user = await userService.createUser({
+                name: body.name,
+                email: body.email,
+                password_hash: body.password_hash || ''
+            });
+            context.log(`User registered: ${user.name} (ID: ${user.id})`);
 
             return {
                 status: 200,

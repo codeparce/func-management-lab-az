@@ -1,30 +1,40 @@
-const { getPool, sql } = require('../db');
+const { getPool } = require('../db');
 
 async function getAllUsers() {
   const pool = await getPool();
-  const result = await pool.request().query('SELECT * FROM Users ORDER BY CreatedAt DESC');
-  return result.recordset;
+  const result = await pool.query(
+    'SELECT id, name, email, activo, fecha_creacion FROM users ORDER BY fecha_creacion DESC'
+  );
+  return result.rows;
 }
 
 async function getUserById(id) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('id', sql.Int, id)
-    .query('SELECT * FROM Users WHERE Id = @id');
-  return result.recordset[0] || null;
+  const result = await pool.query(
+    'SELECT id, name, email, activo, fecha_creacion FROM users WHERE id = $1',
+    [id]
+  );
+  return result.rows[0] || null;
 }
 
-async function createUser(name, email) {
+async function getUserByEmail(email) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('name', sql.NVarChar(255), name)
-    .input('email', sql.NVarChar(255), email || null)
-    .query(`
-      INSERT INTO Users (Name, Email)
-      VALUES (@name, @email);
-      SELECT SCOPE_IDENTITY() AS id;
-    `);
-  return { id: result.recordset[0].id, name, email: email || null };
+  const result = await pool.query(
+    'SELECT id, name, email, activo, fecha_creacion FROM users WHERE email = $1',
+    [email]
+  );
+  return result.rows[0] || null;
 }
 
-module.exports = { getAllUsers, getUserById, createUser };
+async function createUser({ name, email, password_hash = '' }) {
+  const pool = await getPool();
+  const result = await pool.query(
+    `INSERT INTO users (name, email, password_hash)
+     VALUES ($1, $2, $3)
+     RETURNING id, name, email, activo, fecha_creacion`,
+    [name, email, password_hash]
+  );
+  return result.rows[0];
+}
+
+module.exports = { getAllUsers, getUserById, getUserByEmail, createUser };
