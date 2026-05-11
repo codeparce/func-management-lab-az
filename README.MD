@@ -28,27 +28,27 @@ curl "http://localhost:7071/api/users?email=juan@example.com"
 ### `POST /api/users`
 Registra un nuevo usuario.
 
-| Campo         | Tipo   | Obligatorio | Descripción                    |
-|---------------|--------|-------------|--------------------------------|
-| name          | string | Sí          | Nombre del usuario             |
-| email         | string | Sí          | Correo del usuario (único)     |
-| password_hash | string | No          | Hash de contraseña             |
+| Campo         | Tipo   | Obligatorio | Descripción                |
+| ------------- | ------ | ----------- | -------------------------- |
+| name          | string | Sí          | Nombre del usuario         |
+| email         | string | Sí          | Correo del usuario (único) |
+| password_hash | string | Sí          | contraseña                 |
 
 ```bash
 curl -X POST http://localhost:7071/api/users \
   -H "Content-Type: application/json" \
-  -d '{"name": "Juan", "email": "juan@example.com"}'
+  -d '{"name": "Juan", "email": "juan@example.com", "password_hash" : "test"}'
 ```
 
 ## Respuestas
 
-| Código | Descripción                                      |
-|--------|--------------------------------------------------|
-| 200    | Operación exitosa                                |
-| 400    | Faltó `name`/`email` o el JSON es inválido       |
-| 404    | Usuario no encontrado (GET por id o email)       |
-| 409    | Email ya registrado (POST duplicado)             |
-| 500    | Error interno del servidor                       |
+| Código | Descripción                                                |
+| ------ | ---------------------------------------------------------- |
+| 200    | Operación exitosa                                          |
+| 400    | Faltó `name`/`email`/`password_hash` o el JSON es inválido |
+| 404    | Usuario no encontrado (GET por id o email)                 |
+| 409    | Email ya registrado (POST duplicado)                       |
+| 500    | Error interno del servidor                                 |
 
 ## Probar errores
 

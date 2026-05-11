@@ -48,51 +48,54 @@ app.http('users', {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(users)
                 };
-            }
+            } else if (request.method === 'POST') {
 
-            let body;
-            try {
-                body = await request.json();
-            } catch {
+                let body;
+                try {
+                    body = await request.json();
+                } catch {
+                    return {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ error: 'Invalid JSON in request body' })
+                    };
+                }
+
+                if (!body.name || !body.email || !body.password_hash) {
+                    return {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ error: 'Fields "name", "email", and "password_hash" are required' })
+                    };
+                }
+
+                const existing = await userService.getUserByEmail(body.email);
+                if (existing) {
+                    return {
+                        status: 409,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ error: 'Email already registered' })
+                    };
+                }
+
+                const user = await userService.createUser({
+                    name: body.name,
+                    email: body.email,
+                    password_hash: body.password_hash
+                });
+                context.log(`User registered: ${user.name} (ID: ${user.id})`);
+
                 return {
-                    status: 400,
+                    status: 200,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Invalid JSON in request body' })
+                    body: JSON.stringify({
+                        message: 'User registered successfully',
+                        user
+                    })
                 };
+
             }
 
-            if (!body.name || !body.email || !body.password_hash) {
-                return {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Fields "name", "email", and "password_hash" are required' })
-                };
-            }
-
-            const existing = await userService.getUserByEmail(body.email);
-            if (existing) {
-                return {
-                    status: 409,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Email already registered' })
-                };
-            }
-
-            const user = await userService.createUser({
-                name: body.name,
-                email: body.email,
-                password_hash: body.password_hash 
-            });
-            context.log(`User registered: ${user.name} (ID: ${user.id})`);
-
-            return {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: 'User registered successfully',
-                    user
-                })
-            };
         } catch (error) {
             context.log(`Error: `, error);
             return {
