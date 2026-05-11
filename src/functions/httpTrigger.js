@@ -61,11 +61,11 @@ app.http('users', {
                 };
             }
 
-            if (!body.name || !body.email) {
+            if (!body.name || !body.email || !body.password_hash) {
                 return {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Fields "name" and "email" are required' })
+                    body: JSON.stringify({ error: 'Fields "name", "email", and "password_hash" are required' })
                 };
             }
 
@@ -81,7 +81,7 @@ app.http('users', {
             const user = await userService.createUser({
                 name: body.name,
                 email: body.email,
-                password_hash: body.password_hash || ''
+                password_hash: body.password_hash 
             });
             context.log(`User registered: ${user.name} (ID: ${user.id})`);
 
@@ -94,7 +94,7 @@ app.http('users', {
                 })
             };
         } catch (error) {
-            context.log(`Error: ${error.message}`);
+            context.log(`Error: `, error);
             return {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

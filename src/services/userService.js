@@ -26,7 +26,7 @@ async function getUserByEmail(email) {
   return result.rows[0] || null;
 }
 
-async function createUser({ name, email, password_hash = '' }) {
+async function createUser({ name, email, password_hash  }) {
   const pool = await getPool();
   const result = await pool.query(
     `INSERT INTO users (name, email, password_hash)

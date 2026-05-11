@@ -94,8 +94,5 @@ func-management-lab-az/
 ## App settings (para deploy en Azure)
 
 ```bash
-az functionapp config appsettings set \
-  --name func-management-lab-az \
-  --resource-group lab-functions-apps \
-  --settings DATABASE_URL="postgresql://..."
+az functionapp config appsettings set  --name func-management-lab-az  --resource-group lab-functions-apps  --settings DATABASE_URL="postgresql://...."
 ```
